@@ -24,6 +24,15 @@ export interface ShapeSpec {
 export interface Option {
   text?: string;
   shape?: ShapeSpec;
+  /** A 2x2 carpet patch: colors in reading order (top-left, top-right, bottom-left, bottom-right). */
+  patch?: string[];
+}
+
+/** A patterned carpet with a 2x2 hole (hole cells are null). */
+export interface Carpet {
+  cols: number;
+  rows: number;
+  cells: (string | null)[];
 }
 
 /** "Numbers in shapes" visuals: split circles, or arrow machines. null marks the missing number. */
@@ -46,6 +55,7 @@ export interface Question {
   grid?: (ShapeSpec | null)[];
   gridCols?: number;
   numFigure?: NumFigure;
+  carpet?: Carpet;
   options: Option[];
   answer: number;
   hint: string;

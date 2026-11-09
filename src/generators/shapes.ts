@@ -1,5 +1,6 @@
 import type { Option, Question, ShapeKind, ShapeSpec } from '../types';
 import { finalize, pick, randInt, shuffle, uid } from './util';
+import { carpet, rowsSeries } from './shapes2';
 
 export const COLORS = ['#ef4444', '#3b82f6', '#22c55e', '#f59e0b', '#a855f7', '#ec4899'];
 const KINDS: ShapeKind[] = ['circle', 'square', 'triangle', 'star', 'diamond', 'hexagon', 'heart'];
@@ -207,8 +208,10 @@ function oddOne(level: number): Question {
 export function genShapes(level: number): Question {
   const lv = Math.min(5, Math.max(1, level));
   const r = Math.random();
-  if (r < 0.42) return matrix(lv);
-  if (r < 0.7) return series(lv);
-  if (r < 0.85) return sidesSeries(lv);
+  if (r < 0.3) return matrix(lv);
+  if (r < 0.5) return series(lv);
+  if (r < 0.6) return sidesSeries(lv);
+  if (r < 0.75) return rowsSeries(lv);
+  if (r < 0.92) return carpet(lv);
   return oddOne(lv);
 }

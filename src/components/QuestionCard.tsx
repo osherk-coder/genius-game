@@ -1,6 +1,7 @@
 import type { Question } from '../types';
 import { ShapeView } from './ShapeView';
 import { NumFigureView } from './NumFigureView';
+import { CarpetView, PatchView } from './CarpetView';
 
 interface Props {
   q: Question;
@@ -12,7 +13,7 @@ interface Props {
 }
 
 export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Props) {
-  const hasShapes = q.options.some((o) => o.shape);
+  const hasShapes = q.options.some((o) => o.shape || o.patch);
   return (
     <div className="qcard">
       {q.passage && (
@@ -42,6 +43,7 @@ export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Pro
         </div>
       )}
       {q.numFigure && <NumFigureView fig={q.numFigure} />}
+      {q.carpet && <CarpetView c={q.carpet} />}
       {q.grid && (
         <div className="grid" dir="ltr" style={{ gridTemplateColumns: `repeat(${q.gridCols ?? 3}, 1fr)` }}>
           {q.grid.map((cell, i) => (
@@ -61,7 +63,13 @@ export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Pro
           return (
             <button key={i} className={cls} disabled={revealed} onClick={() => onSelect(i)}>
               <span className="opt-letter">{'אבגד'[i]}</span>
-              {o.shape ? <ShapeView s={o.shape} size={64} /> : <span className="opt-text">{o.text}</span>}
+              {o.shape ? (
+                <ShapeView s={o.shape} size={64} />
+              ) : o.patch ? (
+                <PatchView colors={o.patch} />
+              ) : (
+                <span className="opt-text">{o.text}</span>
+              )}
             </button>
           );
         })}

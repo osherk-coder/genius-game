@@ -161,6 +161,8 @@ input { font-family: inherit; font-size: 18px; }
   font-size: 34px; font-weight: 800; text-align: center; margin: 14px 0; padding: 14px; background: #f5f3ff;
   border-radius: 16px; letter-spacing: 1px; color: #4c1d95; white-space: pre-line; line-height: 1.6;
 }
+.carpet-wrap { display: flex; justify-content: center; margin: 14px 0; }
+.carpet { width: 100%; max-width: 380px; height: auto; }
 .numfig { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
 .machines { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 14px 0; }
 .machine-row { display: flex; align-items: center; gap: 10px; }

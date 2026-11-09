@@ -5,6 +5,7 @@ import { genSequence, seqRule } from './sequences';
 import { genShapes, sameShape } from './shapes';
 import { genLogic } from './logic';
 import { genNumShapes } from './numshapes';
+import { carpet, rowsSeries } from './shapes2';
 import { buildExam } from '../engine/questions';
 import { makeQuestion } from '../engine/questions';
 import { ANALOGY_BANK } from '../data/questions/analogies';
@@ -31,6 +32,8 @@ function checkShape(q: Question) {
       for (let j = i + 1; j < shapes.length; j++) expect(sameShape(shapes[i], shapes[j])).toBe(false);
   }
   for (const t of texts) expect(t).not.toMatch(/NaN|undefined|-\d/);
+  const patches = q.options.filter((o) => o.patch).map((o) => o.patch!.join());
+  expect(new Set(patches).size).toBe(patches.length);
 }
 
 describe('question generators produce valid questions', () => {
@@ -119,6 +122,27 @@ describe('math answers are correct', () => {
           known[unknown] = isMul ? Math.sqrt(Number(rhs)) : (Number(rhs) - rest) / cnt;
         }
         expect(Number(q.options[q.answer].text)).toBe(known[target]);
+      }
+  });
+});
+
+describe('new shape types', () => {
+  it('carpets: hole is 2x2, patches distinct, every option is a full patch', () => {
+    for (let level = 1; level <= 5; level++)
+      for (let i = 0; i < 300; i++) {
+        const q = carpet(level);
+        checkShape(q);
+        expect(q.carpet!.cells.filter((c) => c === null)).toHaveLength(4);
+        q.options.forEach((o) => expect(o.patch).toHaveLength(4));
+      }
+  });
+  it('three-row series: 3x3 grid with the last cell missing', () => {
+    for (let level = 1; level <= 5; level++)
+      for (let i = 0; i < 300; i++) {
+        const q = rowsSeries(level);
+        checkShape(q);
+        expect(q.grid).toHaveLength(9);
+        expect(q.grid![8]).toBeNull();
       }
   });
 });
