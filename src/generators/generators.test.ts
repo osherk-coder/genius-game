@@ -4,6 +4,8 @@ import { genMath } from './math';
 import { genSequence, seqRule } from './sequences';
 import { genShapes, sameShape } from './shapes';
 import { genLogic } from './logic';
+import { genNumShapes } from './numshapes';
+import { buildExam } from '../engine/questions';
 import { makeQuestion } from '../engine/questions';
 import { ANALOGY_BANK } from '../data/questions/analogies';
 import { LOGIC_BANK } from '../data/questions/logic';
@@ -42,6 +44,16 @@ describe('question generators produce valid questions', () => {
     it(`shapes level ${level}`, () => {
       for (let i = 0; i < RUNS; i++) checkShape(genShapes(level));
     });
+    it(`numbers-in-shapes level ${level}`, () => {
+      for (let i = 0; i < RUNS; i++) {
+        const q = genNumShapes(level);
+        checkShape(q);
+        expect(q.numFigure).toBeDefined();
+      }
+    });
+    it(`math word problems level ${level}`, () => {
+      for (let i = 0; i < 100; i++) checkShape(genMath(level, true));
+    });
     it(`logic level ${level}`, () => {
       for (let i = 0; i < RUNS; i++) checkShape(genLogic(level));
     });
@@ -53,27 +65,71 @@ describe('question generators produce valid questions', () => {
   });
 });
 
+const evalExpr = (e: string) =>
+  Function(`return (${e.replace(/−/g, '-').replace(/×/g, '*').replace(/:/g, '/')})`)() as number;
+
 describe('math answers are correct', () => {
+  const many = (level: number, n = 600) => Array.from({ length: n }, () => genMath(level));
+
   it('evaluates displayed arithmetic', () => {
-    for (let level = 1; level <= 4; level++) {
-      for (let i = 0; i < RUNS; i++) {
-        const q = genMath(level);
-        if (!q.display || !q.display.endsWith('= ?')) continue;
-        const expr = q.display.replace('= ?', '').replace('−', '-').replace('×', '*').replace(':', '/');
-        const value = Function(`return (${expr})`)() as number;
-        expect(Number(q.options[q.answer].text)).toBe(value);
+    for (let level = 1; level <= 4; level++)
+      for (const q of many(level)) {
+        if (!q.display || !q.display.endsWith('= ___')) continue;
+        expect(Number(q.options[q.answer].text)).toBe(evalExpr(q.display.replace('= ___', '')));
       }
-    }
   });
 
-  it('missing-number questions are consistent', () => {
-    for (let i = 0; i < RUNS; i++) {
-      const q = genMath(3);
-      if (!q.display || q.display.endsWith('= ?')) continue;
-      const ans = Number(q.options[q.answer].text);
-      const expr = q.display.replace('?', String(ans)).replace('−', '-');
-      const [left, right] = expr.split('=');
-      expect(Function(`return (${left})`)()).toBe(Number(right));
+  it('smiley exercises are consistent', () => {
+    for (let level = 1; level <= 3; level++)
+      for (const q of many(level)) {
+        if (!q.display?.includes('🙂')) continue;
+        const [left, right] = q.display.replace('🙂', q.options[q.answer].text!).split('=');
+        expect(evalExpr(left)).toBe(Number(right));
+      }
+  });
+
+  it('inequalities have exactly one option that works', () => {
+    for (let level = 2; level <= 4; level++)
+      for (const q of many(level)) {
+        if (!q.display || !/[<>]/.test(q.display)) continue;
+        const works = q.options.map((o) => {
+          const e = q.display!.replace('___', o.text!);
+          const [l, r] = e.split(/[<>]/);
+          return e.includes('<') ? evalExpr(l) < evalExpr(r) : evalExpr(l) > evalExpr(r);
+        });
+        expect(works.filter(Boolean)).toHaveLength(1);
+        expect(works[q.answer]).toBe(true);
+      }
+  });
+
+  it('picture puzzles are solvable with the given answer', () => {
+    for (let level = 1; level <= 5; level++)
+      for (const q of many(level)) {
+        if (!q.prompt.startsWith('כל ציור')) continue;
+        const target = q.prompt.match(/ל-(\S+)\?/)![1];
+        // solve line by line: each line introduces exactly one new picture
+        const known: Record<string, number> = {};
+        for (const line of q.display!.split(/\n/)) {
+          const [lhs, rhs] = line.split('=');
+          const terms = lhs.split(/[+×]/).map((t) => t.trim());
+          const isMul = lhs.includes('×');
+          const unknown = terms.find((t) => !(t in known))!;
+          const cnt = terms.filter((t) => t === unknown).length;
+          const rest = terms.filter((t) => t !== unknown).reduce((a, t) => a + known[t], 0);
+          known[unknown] = isMul ? Math.sqrt(Number(rhs)) : (Number(rhs) - rest) / cnt;
+        }
+        expect(Number(q.options[q.answer].text)).toBe(known[target]);
+      }
+  });
+});
+
+describe('exam simulation', () => {
+  it('builds both parts with valid questions', () => {
+    const levels = { math: 3, reading: 3, sequences: 3, analogies: 3, shapes: 3, logic: 3 };
+    for (const part of ['A', 'B'] as const) {
+      const qs = buildExam(part, levels);
+      expect(qs.length).toBeGreaterThanOrEqual(18);
+      qs.forEach(checkShape);
     }
   });
 });

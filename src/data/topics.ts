@@ -11,11 +11,11 @@ export interface TopicInfo {
 }
 
 export const TOPICS: TopicInfo[] = [
-  { id: 'math', name: 'חשבון', island: 'אי המספרים', emoji: '🔢', stage: 'א', color: '#f59e0b', desc: 'תרגילים ובעיות מילוליות' },
-  { id: 'reading', name: 'הבנת הנקרא', island: 'אי הסיפורים', emoji: '📖', stage: 'א', color: '#10b981', desc: 'קוראים קטע ועונים על שאלות' },
-  { id: 'sequences', name: 'סדרות', island: 'אי הסדרות', emoji: '🔗', stage: 'ב', color: '#3b82f6', desc: 'מגלים את החוק וממשיכים' },
-  { id: 'analogies', name: 'מילים ויחסים', island: 'אי המילים', emoji: '💬', stage: 'ב', color: '#ec4899', desc: 'אנלוגיות ומילה יוצאת דופן' },
-  { id: 'shapes', name: 'צורות', island: 'אי הצורות', emoji: '🔷', stage: 'ב', color: '#8b5cf6', desc: 'מטריצות, סדרות צורות ויוצא דופן' },
+  { id: 'math', name: 'חשבון', island: 'אי החשבון', emoji: '🔢', stage: 'א', color: '#f59e0b', desc: 'תרגילים, חייכנים, אי-שוויונים, חידות בציורים ובעיות' },
+  { id: 'reading', name: 'הבנת הנקרא', island: 'אי הסיפורים', emoji: '📖', stage: 'א', color: '#10b981', desc: 'קטעי מידע וסיפורים עם שורות ממוספרות' },
+  { id: 'sequences', name: 'סדרות ומספרים בצורות', island: 'אי הסדרות', emoji: '🔗', stage: 'ב', color: '#3b82f6', desc: 'סדרות, עיגולים עם מספרים ומכונות' },
+  { id: 'analogies', name: 'מילים ויחסים', island: 'אי המילים', emoji: '💬', stage: 'ב', color: '#ec4899', desc: 'קשר בין מילים, השלמת משפטים וביטויים' },
+  { id: 'shapes', name: 'צורות', island: 'אי הצורות', emoji: '🔷', stage: 'ב', color: '#8b5cf6', desc: 'מטריצות, סדרות צורות, מצולעים ויוצא דופן' },
   { id: 'logic', name: 'חשיבה', island: 'אי החידות', emoji: '🧩', stage: 'ב', color: '#ef4444', desc: 'חידות היגיון וסידור' },
 ];
 

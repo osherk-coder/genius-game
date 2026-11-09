@@ -118,13 +118,44 @@ function series(level: number): Question {
     id: uid('ser'),
     topic: 'shapes',
     level,
-    prompt: 'מה הצורה הבאה בסדרה? (קוראים מימין לשמאל)',
+    prompt: 'מה הצורה הבאה בסדרה? (קוראים משמאל לימין)',
     grid: [...items, null],
     gridCols: items.length + 1,
     options,
     answer,
     hint,
     explanation: rule + '.',
+  };
+}
+
+const POLY: ShapeKind[] = ['triangle', 'square', 'pentagon', 'hexagon', 'heptagon', 'octagon'];
+const SIDES_NAME = ['משולש', 'ריבוע', 'מחומש', 'משושה', 'משובע', 'מתומן'];
+
+/** Polygons whose number of sides grows by one each step (as in the official demo test). */
+function sidesSeries(level: number): Question {
+  const color = pick(COLORS);
+  const len = level >= 4 ? 4 : 3;
+  const start = randInt(0, POLY.length - len - 1);
+  const items: ShapeSpec[] = POLY.slice(start, start + len).map((k) => ({ kind: k, color, filled: false }));
+  const nextIdx = start + len;
+  const correct: ShapeSpec = { kind: POLY[nextIdx], color, filled: false };
+  const distractors = uniqueDistractors(correct, [
+    () => ({ ...correct, kind: POLY[Math.max(0, nextIdx - pick([1, 2]))] }),
+    () => ({ ...correct, kind: POLY[Math.min(POLY.length - 1, nextIdx + 1)] }),
+    () => ({ ...correct, kind: pick(['circle', 'star', 'heart'] as ShapeKind[]) }),
+  ]);
+  const { options, answer } = shapeOptions(correct, distractors);
+  return {
+    id: uid('sid'),
+    topic: 'shapes',
+    level,
+    prompt: 'מה הצורה הבאה בסדרה? (קוראים משמאל לימין)',
+    grid: [...items, null],
+    gridCols: items.length + 1,
+    options,
+    answer,
+    hint: 'ספרי כמה צלעות (קווים ישרים) יש לכל צורה.',
+    explanation: `בכל צעד מספר הצלעות גדל באחת. אחרי ה${SIDES_NAME[nextIdx - 1]} בא ${SIDES_NAME[nextIdx]} עם ${nextIdx + 3} צלעות.`,
   };
 }
 
@@ -176,7 +207,8 @@ function oddOne(level: number): Question {
 export function genShapes(level: number): Question {
   const lv = Math.min(5, Math.max(1, level));
   const r = Math.random();
-  if (r < 0.45) return matrix(lv);
-  if (r < 0.8) return series(lv);
+  if (r < 0.42) return matrix(lv);
+  if (r < 0.7) return series(lv);
+  if (r < 0.85) return sidesSeries(lv);
   return oddOne(lv);
 }

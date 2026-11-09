@@ -32,12 +32,7 @@ import {
 import { sounds } from '../sound';
 
 const ALL: TopicId[] = TOPICS.map((t) => t.id);
-const EXAM_TOPICS: Record<'A' | 'B', TopicId[]> = {
-  A: ['math', 'reading'],
-  B: ['sequences', 'analogies', 'shapes', 'logic'],
-};
-const EXAM_COUNT = { A: 16, B: 20 };
-const EXAM_SECONDS = { A: 20 * 60, B: 20 * 60 };
+const EXAM_SECONDS = { A: 25 * 60, B: 25 * 60 };
 
 interface Plan {
   total: number;
@@ -88,7 +83,7 @@ function makePlan(mode: PlayMode, s: GameState): Plan {
       return { total: qs.length, seconds: null, feedback: true, title: '🔁 תיקון טעויות', fixed: qs, topicAt: () => 'math', range: full, inserts: new Map() };
     }
     case 'exam': {
-      const qs = buildExam(EXAM_TOPICS[mode.part], s.topicLevel, EXAM_COUNT[mode.part]);
+      const qs = buildExam(mode.part, s.topicLevel);
       return {
         total: qs.length,
         seconds: EXAM_SECONDS[mode.part],

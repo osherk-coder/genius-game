@@ -12,12 +12,12 @@ export function ExamScreen({ go }: { go: Go }) {
         <button className="exam-card" onClick={() => go({ name: 'play', mode: { kind: 'exam', part: 'A' } })}>
           <span className="big-emoji">🔢📖</span>
           <strong>שלב א'</strong>
-          <small>חשבון והבנת הנקרא · 16 שאלות · 20 דקות</small>
+          <small>חשבון (תרגילים, חייכנים, אי-שוויונים, חידות בציורים, בעיות) ושני קטעי קריאה · כ-23 שאלות · 25 דקות</small>
         </button>
         <button className="exam-card" onClick={() => go({ name: 'play', mode: { kind: 'exam', part: 'B' } })}>
-          <span className="big-emoji">🔗💬🔷🧩</span>
+          <span className="big-emoji">💬🔢⭕🔷</span>
           <strong>שלב ב'</strong>
-          <small>סדרות, מילים, צורות וחשיבה · 20 שאלות · 20 דקות</small>
+          <small>קשר בין מילים, השלמת משפטים, בעיות, מספרים בצורות וצורות · 23 שאלות · 25 דקות</small>
         </button>
       </div>
       <p className="muted-text">

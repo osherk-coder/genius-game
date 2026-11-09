@@ -1,5 +1,6 @@
 import type { Question } from '../types';
 import { ShapeView } from './ShapeView';
+import { NumFigureView } from './NumFigureView';
 
 interface Props {
   q: Question;
@@ -16,7 +17,18 @@ export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Pro
     <div className="qcard">
       {q.passage && (
         <div className="passage">
-          {q.passage.split('\n\n').map((p, i) => (i === 0 ? <h4 key={i}>{p}</h4> : <p key={i}>{p}</p>))}
+          <h4>{q.passage.split('\n')[0]}</h4>
+          <ol className="passage-lines">
+            {q.passage
+              .split('\n')
+              .slice(1)
+              .map((line, i) => (
+                <li key={i}>
+                  <span className="ln">{i + 1}</span>
+                  {line}
+                </li>
+              ))}
+          </ol>
         </div>
       )}
       <div className="prompt">
@@ -24,9 +36,14 @@ export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Pro
           <p key={i}>{line}</p>
         ))}
       </div>
-      {q.display && <div className="display">{q.display}</div>}
+      {q.display && (
+        <div className="display" dir={q.displayLtr ? 'ltr' : undefined}>
+          {q.display}
+        </div>
+      )}
+      {q.numFigure && <NumFigureView fig={q.numFigure} />}
       {q.grid && (
-        <div className="grid" style={{ gridTemplateColumns: `repeat(${q.gridCols ?? 3}, 1fr)` }}>
+        <div className="grid" dir="ltr" style={{ gridTemplateColumns: `repeat(${q.gridCols ?? 3}, 1fr)` }}>
           {q.grid.map((cell, i) => (
             <div key={i} className={cell ? 'cell' : 'cell missing'}>
               {cell ? <ShapeView s={cell} size={q.gridCols && q.gridCols > 3 ? 56 : 68} /> : '?'}

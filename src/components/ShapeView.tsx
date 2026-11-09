@@ -1,5 +1,14 @@
 import type { ShapeKind, ShapeSpec } from '../types';
 
+/** Regular polygon with n sides, pointing up. */
+function poly(n: number): string {
+  const pts = Array.from({ length: n }, (_, i) => {
+    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    return `${(50 + 42 * Math.cos(a)).toFixed(1)} ${(52 + 42 * Math.sin(a)).toFixed(1)}`;
+  });
+  return `M${pts.join(' L')} Z`;
+}
+
 function path(kind: ShapeKind): string {
   switch (kind) {
     case 'circle':
@@ -12,6 +21,12 @@ function path(kind: ShapeKind): string {
       return 'M50 6 L92 50 L50 94 L8 50 Z';
     case 'hexagon':
       return 'M50 6 L88 28 V72 L50 94 L12 72 V28 Z';
+    case 'pentagon':
+      return poly(5);
+    case 'heptagon':
+      return poly(7);
+    case 'octagon':
+      return poly(8);
     case 'star':
       return 'M50 6 L61 38 H94 L67 58 L77 92 L50 72 L23 92 L33 58 L6 38 H39 Z';
     case 'heart':

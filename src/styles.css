@@ -148,16 +148,32 @@ input { font-family: inherit; font-size: 18px; }
 .qcard { background: var(--card); border-radius: var(--radius); padding: 22px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25); }
 .passage {
   background: #fefce8; border: 2px solid #fde68a; border-radius: 16px; padding: 14px 18px; margin-bottom: 14px;
-  max-height: 260px; overflow-y: auto; font-size: 19px; line-height: 1.7; user-select: text;
+  max-height: 42vh; overflow-y: auto; font-size: 19px; line-height: 1.7; user-select: text;
 }
 .passage h4 { margin: 0 0 6px; font-size: 20px; }
 .passage p { margin: 0; }
+.passage-lines { list-style: none; margin: 0; padding: 0; }
+.passage-lines li { display: flex; gap: 10px; }
+.passage-lines .ln { flex-shrink: 0; width: 22px; color: #a16207; font-size: 14px; font-weight: 700; padding-top: 4px; text-align: center; }
 .prompt { font-size: 23px; font-weight: 600; line-height: 1.5; }
 .prompt p { margin: 0 0 4px; }
 .display {
   font-size: 34px; font-weight: 800; text-align: center; margin: 14px 0; padding: 14px; background: #f5f3ff;
-  border-radius: 16px; letter-spacing: 1px; color: #4c1d95;
+  border-radius: 16px; letter-spacing: 1px; color: #4c1d95; white-space: pre-line; line-height: 1.6;
 }
+.numfig { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 14px 0; }
+.machines { display: flex; flex-direction: column; align-items: center; gap: 12px; margin: 14px 0; }
+.machine-row { display: flex; align-items: center; gap: 10px; }
+.mball {
+  width: 64px; height: 64px; border-radius: 50%; border: 3px solid #4c1d95; display: flex; align-items: center;
+  justify-content: center; font-size: 24px; font-weight: 800; background: #fff;
+}
+.mball.missing { color: #dc2626; border-style: dashed; background: #fef2f2; }
+.mbox {
+  min-width: 70px; height: 64px; border: 4px solid #1e1b4b; border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 24px; font-weight: 800; background: #ede9fe; padding: 0 8px;
+}
+.marrow { font-size: 26px; color: #7c3aed; }
 .grid { display: grid; gap: 8px; margin: 14px auto; max-width: 420px; }
 .cell {
   aspect-ratio: 1; background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 12px;
