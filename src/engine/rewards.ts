@@ -23,7 +23,12 @@ export function grantMinutes(s: GameState, amount: number): [GameState, number] 
   const used = s.minutesToday.date === t ? s.minutesToday.amount : 0;
   const granted = Math.max(0, Math.min(amount, s.settings.dailyCap - used));
   return [
-    { ...s, minutes: s.minutes + granted, minutesToday: { date: t, amount: used + granted } },
+    {
+      ...s,
+      minutes: s.minutes + granted,
+      minutesToday: { date: t, amount: used + granted },
+      minutesByDate: { ...s.minutesByDate, [t]: (s.minutesByDate[t] ?? 0) + granted },
+    },
     granted,
   ];
 }
@@ -57,7 +62,13 @@ export function recordAnswer(s: GameState, q: Question, correct: boolean): GameS
   const stats = { ...s.stats, [q.topic]: { attempts: st.attempts + 1, correct: st.correct + (correct ? 1 : 0) } };
   let mistakes = s.mistakes.filter((m) => m.q.id !== q.id);
   if (!correct) mistakes = [...mistakes, { q, due: s.sessionCount + 2 }].slice(-60);
-  return { ...s, stats, mistakes, totalCorrect: s.totalCorrect + (correct ? 1 : 0) };
+  const t = today();
+  const day = { ...(s.daily[t] ?? {}) };
+  const d = day[q.topic] ?? { a: 0, c: 0 };
+  day[q.topic] = { a: d.a + 1, c: d.c + (correct ? 1 : 0) };
+  // keep ~2 months of daily history
+  const daily = Object.fromEntries(Object.entries({ ...s.daily, [t]: day }).sort().slice(-60));
+  return { ...s, stats, mistakes, daily, totalCorrect: s.totalCorrect + (correct ? 1 : 0) };
 }
 
 export function dueMistakes(s: GameState, topic: TopicId | null, max: number): Question[] {

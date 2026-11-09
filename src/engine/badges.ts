@@ -30,6 +30,10 @@ export const BADGES: Badge[] = [
   { id: 'exam1', name: 'מוכנה למבחן', emoji: '📝', desc: 'סיימת סימולציית מבחן', check: (s) => s.examsDone >= 1 },
   { id: 'exam80', name: 'מצטיינת', emoji: '🎓', desc: '80% ומעלה בסימולציה', check: (s) => s.bestExam >= 80 },
   { id: 'shopper', name: 'קונה ראשונה', emoji: '🛍️', desc: 'קנית פריט בחנות', check: (s) => s.owned.length > 3 },
+  { id: 'grow1', name: 'גדלתי!', emoji: '🐥', desc: 'ינשופי גדל לינשוף צעיר', check: (s) => s.totalCorrect >= 40 },
+  { id: 'grow4', name: 'ינשוף גאון', emoji: '🌟', desc: 'ינשופי הגיע לשלב הגבוה ביותר', check: (s) => s.totalCorrect >= 600 },
+  { id: 'learner', name: 'אוהבת ללמוד', emoji: '🎓', desc: 'למדת 5 טריקים', check: (s) => s.lessonsSeen.length >= 5 },
+  { id: 'persist', name: 'לא מוותרת', emoji: '💪', desc: 'סיימת 20 משחקים', check: (s) => s.sessionCount >= 20 },
   { id: 'rich', name: 'אוצר', emoji: '💰', desc: 'צברת 1000 יהלומים', check: (s) => s.coins >= 1000 },
 ];
 

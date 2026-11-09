@@ -7,11 +7,15 @@ import { Onboarding } from './screens/Onboarding';
 import { HomeScreen } from './screens/HomeScreen';
 import { IslandScreen } from './screens/IslandScreen';
 import { PlayScreen } from './screens/PlayScreen';
+import { ExamPlayScreen } from './screens/ExamPlayScreen';
 import { ExamScreen } from './screens/ExamScreen';
 import { ShopScreen } from './screens/ShopScreen';
 import { TrophiesScreen } from './screens/TrophiesScreen';
 import { MinutesScreen } from './screens/MinutesScreen';
 import { ParentScreen } from './screens/ParentScreen';
+import { Tour } from './screens/Tour';
+import { LessonScreen } from './screens/LessonScreen';
+import { stopSpeaking } from './speech';
 
 export default function App() {
   const { state } = useGame();
@@ -21,12 +25,14 @@ export default function App() {
   useEffect(() => setSoundEnabled(state.settings.sound), [state.settings.sound]);
 
   const go = (s: Screen) => {
+    stopSpeaking();
     setScreen(s);
     setNav((n) => n + 1);
     window.scrollTo(0, 0);
   };
 
   if (!state.childName) return <Onboarding />;
+  if (!state.tourDone) return <Tour />;
 
   let body;
   switch (screen.name) {
@@ -37,7 +43,7 @@ export default function App() {
       body = <IslandScreen topic={screen.topic} go={go} />;
       break;
     case 'play':
-      body = <PlayScreen mode={screen.mode} go={go} />;
+      body = screen.mode.kind === 'exam' ? <ExamPlayScreen part={screen.mode.part} go={go} /> : <PlayScreen mode={screen.mode} go={go} />;
       break;
     case 'exam':
       body = <ExamScreen go={go} />;
@@ -53,6 +59,9 @@ export default function App() {
       break;
     case 'parent':
       body = <ParentScreen go={go} />;
+      break;
+    case 'lesson':
+      body = <LessonScreen lessonId={screen.lessonId} back={screen.back} go={go} />;
       break;
   }
 

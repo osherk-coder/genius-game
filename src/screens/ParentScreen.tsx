@@ -5,6 +5,8 @@ import { PinPad, TopBar } from '../components/ui';
 import { TOPICS } from '../data/topics';
 import { defaultState, normalize, type Settings } from '../store/state';
 import { today } from '../engine/rewards';
+import { HowItWorks, WeeklyReport } from '../components/ParentReport';
+import { canSpeak, hasHebrewVoice, speak } from '../speech';
 
 function last7Days(): string[] {
   return Array.from({ length: 7 }, (_, i) => {
@@ -103,8 +105,11 @@ export function ParentScreen({ go }: { go: Go }) {
       <TopBar onBack={() => go({ name: 'home' })} title="⚙️ אזור הורים" />
       {msg && <p className="ok-msg">{msg}</p>}
 
+      <WeeklyReport s={state} />
+      <HowItWorks />
+
       <section className="panel">
-        <h3>📊 הצלחה לפי נושא</h3>
+        <h3>📊 הצלחה לפי נושא (מההתחלה)</h3>
         {topicRows.map(({ t, st, pct }) => (
           <div key={t.id} className="bar-row">
             <span className="bar-label">
@@ -195,6 +200,19 @@ export function ParentScreen({ go }: { go: Go }) {
         <label className="check">
           <input type="checkbox" checked={state.settings.sound} onChange={(e) => setSetting('sound', e.target.checked)} /> צלילים
         </label>
+        <label className="check">
+          <input type="checkbox" checked={state.settings.readAloud} onChange={(e) => setSetting('readAloud', e.target.checked)} /> כפתורי הקראה 🔊
+          {canSpeak() && (
+            <button type="button" className="btn small" onClick={() => speak('שלום! אני ינשופי, ואני יודע לקרוא בעברית.')}>
+              בדיקת קול
+            </button>
+          )}
+        </label>
+        {state.settings.readAloud && (!canSpeak() || !hasHebrewVoice()) && (
+          <p className="muted-text">
+            ⚠️ לא נמצא קול עברי במכשיר הזה. באנדרואיד: הגדרות ← נגישות ← המרת טקסט לדיבור ← Google, והורדת עברית.
+          </p>
+        )}
         <label>
           שם הילדה
           <input value={state.childName} onChange={(e) => update((s) => ({ ...s, childName: e.target.value }))} />

@@ -2,6 +2,7 @@ import type { Question } from '../types';
 import { ShapeView } from './ShapeView';
 import { NumFigureView } from './NumFigureView';
 import { CarpetView, PatchView } from './CarpetView';
+import { speak } from '../speech';
 
 interface Props {
   q: Question;
@@ -10,15 +11,31 @@ interface Props {
   revealed: boolean;
   hintShown: boolean;
   onSelect: (i: number) => void;
+  /** Show 🔊 buttons that read the question aloud. */
+  readAloud?: boolean;
 }
 
-export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Props) {
+function questionSpeech(q: Question): string {
+  const opts = q.options.some((o) => o.text)
+    ? ' התשובות: ' + q.options.map((o, i) => `${'אבגד'[i]}. ${o.text ?? ''}`).join('. ')
+    : '';
+  return `${q.prompt}. ${q.display ?? ''}.${opts}`;
+}
+
+export function QuestionCard({ q, selected, revealed, hintShown, onSelect, readAloud }: Props) {
   const hasShapes = q.options.some((o) => o.shape || o.patch);
   return (
     <div className="qcard">
       {q.passage && (
         <div className="passage">
-          <h4>{q.passage.split('\n')[0]}</h4>
+          <h4>
+            {q.passage.split('\n')[0]}
+            {readAloud && (
+              <button className="speak-btn inline" aria-label="הקראת הקטע" onClick={() => speak(q.passage!.replace(/\n/g, ' '))}>
+                🔊
+              </button>
+            )}
+          </h4>
           <ol className="passage-lines">
             {q.passage
               .split('\n')
@@ -33,6 +50,11 @@ export function QuestionCard({ q, selected, revealed, hintShown, onSelect }: Pro
         </div>
       )}
       <div className="prompt">
+        {readAloud && (
+          <button className="speak-btn float" aria-label="הקראת השאלה" onClick={() => speak(questionSpeech(q))}>
+            🔊
+          </button>
+        )}
         {q.prompt.split('\n').map((line, i) => (
           <p key={i}>{line}</p>
         ))}

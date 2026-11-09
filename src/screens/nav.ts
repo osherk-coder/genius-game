@@ -14,6 +14,7 @@ export type Screen =
   | { name: 'shop' }
   | { name: 'trophies' }
   | { name: 'minutes' }
-  | { name: 'parent' };
+  | { name: 'parent' }
+  | { name: 'lesson'; lessonId: string; back: Screen };
 
 export type Go = (s: Screen) => void;

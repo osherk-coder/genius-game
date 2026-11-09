@@ -1,3 +1,7 @@
+import { kindOf, lessonById } from '../data/lessons';
+import { makeQuestion, buildExam } from './questions';
+import { owlStage, owlProgress } from '../data/owlStages';
+import type { TopicId } from '../types';
 import { describe, expect, it } from 'vitest';
 import { newTracker, step } from './adaptive';
 import { coinsForAnswer, grantMinutes, markActive, recordAnswer, starsFor, today, dueMistakes } from './rewards';
@@ -116,5 +120,38 @@ describe('badges and state', () => {
     expect(s.settings.pin).toBe('1234');
     expect(s.settings.dailyCap).toBe(45);
     expect(s.stars.math).toEqual([]);
+  });
+});
+
+
+describe('lessons, owl growth and weekly stats', () => {
+  it('every question type has a lesson', () => {
+    const missing = new Set<string>();
+    for (const t of ['math', 'reading', 'sequences', 'analogies', 'shapes', 'logic'] as TopicId[])
+      for (let lv = 1; lv <= 5; lv++)
+        for (let i = 0; i < 200; i++) {
+          const k = kindOf(makeQuestion(t, lv));
+          if (!lessonById(k)) missing.add(k);
+        }
+    const levels = { math: 3, reading: 3, sequences: 3, analogies: 3, shapes: 3, logic: 3 };
+    for (const q of [...buildExam('A', levels), ...buildExam('B', levels)]) if (!lessonById(kindOf(q))) missing.add(kindOf(q));
+    expect([...missing]).toEqual([]);
+  });
+
+  it('owl grows with correct answers', () => {
+    expect(owlStage(0)).toBe(0);
+    expect(owlStage(40)).toBe(1);
+    expect(owlStage(599)).toBe(3);
+    expect(owlStage(5000)).toBe(4);
+    expect(owlProgress(20)).toEqual({ stage: 0, pct: 0.5, left: 20 });
+  });
+
+  it('records answers per day and minutes per day', () => {
+    const q = genMath(1);
+    let s = recordAnswer(defaultState(), q, true);
+    s = recordAnswer(s, q, false);
+    expect(s.daily[today()].math).toEqual({ a: 2, c: 1 });
+    const [s2] = grantMinutes(s, 5);
+    expect(s2.minutesByDate[today()]).toBe(5);
   });
 });

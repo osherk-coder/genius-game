@@ -18,6 +18,11 @@ export function IslandScreen({ topic, go }: { topic: TopicId; go: Go }) {
     <div className="screen island-screen" style={{ ['--c' as string]: t.color }}>
       <TopBar onBack={() => go({ name: 'home' })} title={`${t.emoji} ${t.island}`} />
       <p className="island-desc">{t.desc} · רמת קושי נוכחית: {'●'.repeat(state.topicLevel[topic])}{'○'.repeat(5 - state.topicLevel[topic])}</p>
+      <div className="row">
+        <button className="btn small" onClick={() => go({ name: 'lesson', lessonId: `topic:${topic}`, back: { name: 'island', topic } })}>
+          🎓 הטריקים של האי
+        </button>
+      </div>
       <div className="path">
         {Array.from({ length: STAGES_PER_ISLAND }, (_, i) => {
           const locked = i > unlockedUpTo;

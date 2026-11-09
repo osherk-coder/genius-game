@@ -9,7 +9,11 @@ export interface Settings {
   dailyBonusMinutes: number;
   dailyCap: number;
   sound: boolean;
+  readAloud: boolean;
 }
+
+/** Answers per topic for one day (for the weekly report). */
+export type DayStats = Partial<Record<TopicId, { a: number; c: number }>>;
 
 export interface Redemption {
   at: string;
@@ -40,6 +44,14 @@ export interface GameState {
   bestExam: number;
   redemptions: Redemption[];
   settings: Settings;
+  /** Child finished the opening tour. */
+  tourDone: boolean;
+  /** Question types whose "learn the trick" lesson was shown. */
+  lessonsSeen: string[];
+  /** Per-day per-topic answers, used for the weekly report. */
+  daily: Record<string, DayStats>;
+  /** Minutes earned per day (for the weekly report). */
+  minutesByDate: Record<string, number>;
 }
 
 const perTopic = <T,>(make: () => T) =>
@@ -69,7 +81,11 @@ export function defaultState(): GameState {
     examsDone: 0,
     bestExam: 0,
     redemptions: [],
-    settings: { pin: '', minutesPerStage: 5, minutesPerBoss: 15, dailyBonusMinutes: 10, dailyCap: 45, sound: true },
+    settings: { pin: '', minutesPerStage: 5, minutesPerBoss: 15, dailyBonusMinutes: 10, dailyCap: 45, sound: true, readAloud: true },
+    tourDone: false,
+    lessonsSeen: [],
+    daily: {},
+    minutesByDate: {},
   };
 }
 

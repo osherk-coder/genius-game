@@ -4,6 +4,7 @@ import { TopBar } from '../components/ui';
 import { Owl } from '../components/Owl';
 import { STAGES_PER_ISLAND, TOPICS } from '../data/topics';
 import { today } from '../engine/rewards';
+import { OWL_STAGES, owlProgress } from '../data/owlStages';
 
 const GREETINGS = [
   'מוכנה לאתגר של היום?',
@@ -18,6 +19,9 @@ export function HomeScreen({ go }: { go: Go }) {
   const dailyDone = state.dailyDone === today();
   const greeting = GREETINGS[new Date().getDate() % GREETINGS.length];
   const mistakes = state.mistakes.length;
+  const grow = owlProgress(state.totalCorrect);
+  const stageInfo = OWL_STAGES[grow.stage];
+  const nextInfo = OWL_STAGES[grow.stage + 1];
 
   return (
     <div className="screen home">
@@ -28,6 +32,23 @@ export function HomeScreen({ go }: { go: Go }) {
         </div>
         <div className="hero-side">
           <div className="speech">{greeting}</div>
+          <div className="grow">
+            <span>
+              {stageInfo.emoji} ינשופי: <strong>{stageInfo.name}</strong>
+            </span>
+            {nextInfo ? (
+              <>
+                <div className="grow-bar">
+                  <div style={{ width: `${grow.pct * 100}%` }} />
+                </div>
+                <small>
+                  עוד {grow.left} תשובות נכונות ואגדל ל{nextInfo.name} {nextInfo.emoji}
+                </small>
+              </>
+            ) : (
+              <small>הגעתי לשלב הכי גבוה! 🏆</small>
+            )}
+          </div>
           <button className={dailyDone ? 'daily done' : 'daily'} disabled={dailyDone} onClick={() => go({ name: 'play', mode: { kind: 'daily' } })}>
             {dailyDone ? '✅ האתגר היומי הושלם! חזרי מחר' : `☀️ האתגר היומי · +50 💎 +${state.settings.dailyBonusMinutes} ⏱️`}
           </button>
@@ -68,6 +89,7 @@ export function HomeScreen({ go }: { go: Go }) {
 
       <nav className="bottom-nav">
         <button onClick={() => go({ name: 'exam' })}>📝<span>מבחן</span></button>
+        <button onClick={() => go({ name: 'lesson', lessonId: 'all', back: { name: 'home' } })}>🎓<span>טריקים</span></button>
         <button onClick={() => go({ name: 'shop' })}>🛍️<span>חנות</span></button>
         <button onClick={() => go({ name: 'trophies' })}>🏆<span>גביעים</span></button>
         <button onClick={() => go({ name: 'minutes' })}>⏱️<span>דקות</span></button>

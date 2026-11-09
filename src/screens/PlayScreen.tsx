@@ -4,7 +4,9 @@ import type { Go, PlayMode } from './nav';
 import { useGame } from '../store/GameContext';
 import type { GameState } from '../store/state';
 import { QuestionCard } from '../components/QuestionCard';
-import { Confetti, TopBar } from '../components/ui';
+import { Confetti, Modal, TopBar } from '../components/ui';
+import { LessonView } from '../components/LessonView';
+import { kindOf, lessonById } from '../data/lessons';
 import { Owl } from '../components/Owl';
 import { newTracker, step, type Tracker } from '../engine/adaptive';
 import { buildExam, makeQuestion } from '../engine/questions';
@@ -98,6 +100,23 @@ function makePlan(mode: PlayMode, s: GameState): Plan {
   }
 }
 
+const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+const MISTAKE_PRAISE = [
+  'טעות היא חלק מהלמידה 💪 קראי את ההסבר, והשאלה תחזור אלייך.',
+  'כמעט! עכשיו את כבר יודעת איך זה עובד.',
+  'גם גאונים טועים. מה שחשוב זה ללמוד מזה 🧠',
+  'לא נורא! טעויות הן הדרך של המוח לגדול 🌱',
+];
+const COMEBACK = ['איזה קאמבק! 🔥 לא ויתרת!', 'ככה עושים את זה! למדת מהטעות 💪', 'יפה! התאוששת מעולה 🌟'];
+const HINT_PRAISE = ['השתמשת ברמז בחוכמה 💡', 'שאלת, הבנת, הצלחת! 💡'];
+const RUN_PRAISE = ['את בוערת! 🔥', 'ריכוז של אלופה! 🏆', 'המוח שלך עובד מעולה! 🧠'];
+
+function effortMessage(r: { correct: number; total: number; passed: boolean }, mistakes: number, minutes: number): string {
+  if (!r.passed) return `לא ויתרת! ענית על ${r.total} שאלות. כל ניסיון מחזק את המוח 💪`;
+  if (mistakes > 0 && r.correct > 0) return `ענית על ${r.total} שאלות${minutes > 0 ? ` ב-${minutes} דקות` : ''}. היו גם טעויות, וזה בדיוק איך שלומדים 🌱`;
+  return `ענית על ${r.total} שאלות${minutes > 0 ? ` ב-${minutes} דקות` : ''}. השקעה של אלופה! 🏆`;
+}
+
 interface Result {
   correct: number;
   total: number;
@@ -140,6 +159,10 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
   const [timeLeft, setTimeLeft] = useState(plan.seconds);
   const [result, setResult] = useState<Result | null>(null);
   const [floater, setFloater] = useState<string | null>(null);
+  const [lessonOpen, setLessonOpen] = useState(false);
+  const [praise, setPraise] = useState<string | null>(null);
+  const [lastWrong, setLastWrong] = useState(false);
+  const [mistakesThisRound, setMistakesThisRound] = useState(0);
 
   useEffect(() => {
     if (timeLeft === null || result) return;
@@ -194,6 +217,15 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
       topicLevel: { ...s.topicLevel, ...topicLevels },
     }));
 
+    // praise effort, not only success
+    if (ok && lastWrong) setPraise(pick(COMEBACK));
+    else if (ok && hintShown) setPraise(pick(HINT_PRAISE));
+    else if (!ok) setPraise(pick(MISTAKE_PRAISE));
+    else if (newRun > 0 && newRun % 5 === 0) setPraise(`${newRun} ברצף! ${pick(RUN_PRAISE)}`);
+    else setPraise(null);
+    setLastWrong(!ok);
+    if (!ok) setMistakesThisRound((m) => m + 1);
+
     if (plan.feedback) {
       setRevealed(true);
       if (ok) {
@@ -218,6 +250,7 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
     setSelected(null);
     setRevealed(false);
     setHintShown(false);
+    setPraise(null);
   }
 
   function finish(nc: number, earnedCoins: number, nAnswers: { topic: TopicId; ok: boolean }[]) {
@@ -324,6 +357,7 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
           </div>
           {result.minutesCapped && <p className="muted-text">הגעת למכסת הדקות של היום. מחר אפשר לצבור עוד!</p>}
           {!result.passed && <p className="muted-text">צריך לפחות 60% כדי לעבור את השלב.</p>}
+          <div className="praise">{effortMessage(result, mistakesThisRound, Math.round((Date.now() - startedAt.current) / 60000))}</div>
           <div className="row">
             {nextStage !== null && mode.kind === 'stage' && (
               <button className="btn primary" onClick={() => go({ name: 'play', mode: { ...mode, stageIdx: nextStage } })}>
@@ -345,6 +379,7 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
     );
   }
 
+  const lesson = lessonById(kindOf(q));
   const fmt = (n: number) => `${Math.floor(n / 60)}:${(n % 60).toString().padStart(2, '0')}`;
   return (
     <div className="screen play">
@@ -362,12 +397,48 @@ export function PlayScreen({ mode, go }: { mode: PlayMode; go: Go }) {
         {timeLeft !== null && <span className={timeLeft < 60 ? 'timer low' : 'timer'}>⏳ {fmt(timeLeft)}</span>}
         {run >= 3 && plan.feedback && <span className="combo">🔥×{run}</span>}
       </div>
-      <QuestionCard key={q.id + index} q={q} selected={selected} revealed={revealed} hintShown={hintShown} onSelect={answer} />
+      {lesson && !state.lessonsSeen.includes(lesson.id) && !revealed && (
+        <div className="new-type-banner">
+          <span>🎓 סוג שאלה חדש: {lesson.title}. רוצה ללמוד את הטריק?</span>
+          <button className="btn small primary" onClick={() => setLessonOpen(true)}>
+            ללמוד
+          </button>
+        </div>
+      )}
+      <QuestionCard
+        key={q.id + index}
+        q={q}
+        selected={selected}
+        revealed={revealed}
+        hintShown={hintShown}
+        onSelect={answer}
+        readAloud={state.settings.readAloud}
+      />
+      {praise && revealed && <div className="praise">{praise}</div>}
       {floater && <div className="floater">{floater}</div>}
+      {lessonOpen && lesson && (
+        <Modal onClose={() => setLessonOpen(false)}>
+          <div className="lesson-modal-inner">
+            <LessonView
+              lesson={lesson}
+              doneLabel="חזרה לשאלה ⬅"
+              onDone={() => {
+                setLessonOpen(false);
+                update((s) => (s.lessonsSeen.includes(lesson.id) ? s : { ...s, lessonsSeen: [...s.lessonsSeen, lesson.id] }));
+              }}
+            />
+          </div>
+        </Modal>
+      )}
       <div className="play-actions">
         {plan.feedback && !revealed && !hintShown && (
           <button className="btn" onClick={() => setHintShown(true)}>
             💡 רמז
+          </button>
+        )}
+        {lesson && (!revealed || selected !== q.answer) && (
+          <button className="btn" onClick={() => setLessonOpen(true)}>
+            🎓 {revealed ? 'איך פותרים?' : 'הטריק'}
           </button>
         )}
         {revealed && (

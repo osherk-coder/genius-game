@@ -1,11 +1,15 @@
 import { itemById } from '../data/shop';
 import type { GameState } from '../store/state';
+import { useGame } from '../store/GameContext';
+import { owlStage } from '../data/owlStages';
 
 interface Props {
   equipped: GameState['equipped'];
   size?: number;
   mood?: 'happy' | 'sad' | 'wow';
   withBackground?: boolean;
+  /** Growth stage 0-4 (defaults to the child's current stage). */
+  stage?: number;
 }
 
 function Hat({ v }: { v: string }) {
@@ -155,7 +159,9 @@ function Accessory({ v }: { v: string }) {
   return null;
 }
 
-export function Owl({ equipped, size = 180, mood = 'happy', withBackground = false }: Props) {
+export function Owl({ equipped, size = 180, mood = 'happy', withBackground = false, stage }: Props) {
+  const { state } = useGame();
+  const st = stage ?? owlStage(state.totalCorrect);
   const colorVal = itemById(equipped.color)?.value ?? '#a78bfa';
   const rainbow = colorVal === 'rainbow';
   const body = rainbow ? 'url(#rainbow)' : colorVal;
@@ -175,9 +181,34 @@ export function Owl({ equipped, size = 180, mood = 'happy', withBackground = fal
           <stop offset="1" stopColor="#c084fc" />
         </linearGradient>
       </defs>
-      <polygon points="46,62 54,20 82,52" fill={body} />
-      <polygon points="154,62 146,20 118,52" fill={body} />
-      <ellipse cx="100" cy="120" rx="72" ry="84" fill={body} />
+      {st >= 4 && (
+        <g className="aura">
+          <circle cx="100" cy="115" r="104" fill="#fde68a" opacity="0.45" />
+          <text x="8" y="40" fontSize="22">✨</text>
+          <text x="172" y="60" fontSize="18">⭐</text>
+          <text x="176" y="190" fontSize="20">✨</text>
+        </g>
+      )}
+      {st === 0 ? (
+        <g fill={body}>
+          <ellipse cx="92" cy="40" rx="5" ry="14" transform="rotate(-20 92 40)" />
+          <ellipse cx="100" cy="36" rx="5" ry="15" />
+          <ellipse cx="108" cy="40" rx="5" ry="14" transform="rotate(20 108 40)" />
+        </g>
+      ) : (
+        <>
+          <polygon points={st === 1 ? '56,62 60,40 80,54' : st >= 3 ? '42,62 50,12 82,52' : '46,62 54,20 82,52'} fill={body} />
+          <polygon points={st === 1 ? '144,62 140,40 120,54' : st >= 3 ? '158,62 150,12 118,52' : '154,62 146,20 118,52'} fill={body} />
+        </>
+      )}
+      <ellipse cx="100" cy="120" rx={st === 0 ? 66 : 72} ry={st === 0 ? 76 : 84} fill={body} />
+      {st === 0 && (
+        <g fill="#fff" opacity="0.35">
+          <circle cx="60" cy="150" r="8" />
+          <circle cx="140" cy="150" r="8" />
+          <circle cx="100" cy="185" r="7" />
+        </g>
+      )}
       <ellipse cx="38" cy="130" rx="16" ry="42" fill={body} style={{ filter: 'brightness(0.85)' }} />
       <ellipse cx="162" cy="130" rx="16" ry="42" fill={body} style={{ filter: 'brightness(0.85)' }} />
       <ellipse cx="100" cy="146" rx="46" ry="52" fill="#fff" opacity="0.75" />
@@ -199,6 +230,12 @@ export function Owl({ equipped, size = 180, mood = 'happy', withBackground = fal
       <polygon points="90,118 110,118 100,134" fill="#f59e0b" />
       <ellipse cx="78" cy="206" rx="14" ry="6" fill="#f59e0b" />
       <ellipse cx="122" cy="206" rx="14" ry="6" fill="#f59e0b" />
+      {st >= 3 && (
+        <g stroke="#1e1b4b" strokeWidth="4" strokeLinecap="round">
+          <line x1="56" y1="68" x2="82" y2="74" />
+          <line x1="144" y1="68" x2="118" y2="74" />
+        </g>
+      )}
       {acc && <Accessory v={acc} />}
       {glasses && <Glasses v={glasses} />}
       {hat && <Hat v={hat} />}

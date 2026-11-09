@@ -8,6 +8,13 @@ export function ExamScreen({ go }: { go: Go }) {
     <div className="screen">
       <TopBar onBack={() => go({ name: 'home' })} title="📝 סימולציית מבחן" />
       <p className="lead">כמו במבחן האמיתי: יש שעון, ורואים את התשובות רק בסוף. בהצלחה!</p>
+      <ul className="tips">
+        <li>⏱️ <strong>אל תיתקעי:</strong> שאלה קשה? לחצי "לדלג" וחזרי אליה בסוף.</li>
+        <li>🗺️ <strong>מפת השאלות</strong> מראה מה עוד לא ענית (צהוב = דילגת).</li>
+        <li>🎯 <strong>לא משאירים ריק:</strong> אם לא בטוחה, פוסלים תשובות שבטוח לא נכונות, ובוחרים מהשאר.</li>
+        <li>👀 <strong>קוראים עד הסוף:</strong> את השאלה ואת כל התשובות, לפני שבוחרים.</li>
+        <li>😌 <strong>נושמים:</strong> זה רק תרגול. כל סימולציה מכינה אותך יותר!</li>
+      </ul>
       <div className="exam-cards">
         <button className="exam-card" onClick={() => go({ name: 'play', mode: { kind: 'exam', part: 'A' } })}>
           <span className="big-emoji">🔢📖</span>
